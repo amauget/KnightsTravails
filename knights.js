@@ -1,7 +1,8 @@
+/* Final search runtimes range from 0.065 and 0.081 on local node js */
 class Board{
   constructor(root = {}){
     this.root = root
-    this.optimal = undefined /* is updated with optimal move count */
+    // this.optimal = undefined /* is updated with optimal move count */
     this.optimalPath = []
   }
   dispatch(start, end){
@@ -40,7 +41,6 @@ class Board{
       if(xMove >= 0 && xMove <= 7 && yMove >= 0 && yMove <= 7){ /* maintains bounds of board */
         if(this.root[key] === undefined || xMove === endSquare[0] && yMove === endSquare[1]){ /* seeks key to verify that square hasn't been visited unless square is the end destination */
           feasibleMoves.push(proposedMove)
-         
         }
       }
     }
@@ -48,16 +48,17 @@ class Board{
     return feasibleMoves
   }
   path(current, end, count = 0, previous = null){
-/*     if(count > 6){ return /* catching virtually all contingencies  }*/
- 
-    if((count < this.optimal || this.optimal === undefined) && count < 7){ /* How can I isolate pathway to each specific route, instead of all iterations with count < this.optimal? */
+
+    if(( this.root[`${end}`] === undefined || count < this.root[`${end}`].count ) && count < 7){ 
+      /* terminates search if count reaches optimal path count. Otherwise when count reaches 6, because any square can be reached in 6 or less moves. */
       let legalMoves = this.legalMoves(current, end)
 
-        this.addSquare(current,count, previous) /* adds current square to list of places visited. */
+      this.addSquare(current,count, previous) /* adds current square to list of places visited. */
+      
       if(end[0] === current[0] && end[1] === current[1]){/* all squares on board can be accessed in 6 or less moves. */
-        this.optimizedUpdate(count)
         let key = end.toString()
-        this.root[key].lastSquare = previous /* updates ends square "lastSquare" if a more optimal path is found */
+        this.root[key].lastSquare = previous
+        this.root[key].count = count
       }
       
       else{
@@ -93,16 +94,13 @@ class Board{
     }
     else{
       this.optimalPath.push(parent)
-
       let newKey = parent
       count ++
+      
       this.createPathArray(newKey, count)
     }
   }
-  optimizedUpdate(count){
-    this.optimal = count
-    return this
-  }
+
   output(start, end){
     let length = this.root[`${end}`].count
  
@@ -114,7 +112,7 @@ class Board{
 
 function init(){ /* The only Board function designed for exterior access is "dispatch()" */
   let board = new Board()
-  let start = [3,3], end = [3,2]
+  let start = [3,3], end = [7,7]
   board.dispatch(start, end)
 }
 
